@@ -4,11 +4,8 @@ import cors from "cors";
 import connectDb from "./config/db";
 
 const app = express();
-
-// Connected to database
-
-connectDb();
 const PORT: number = Number(process.env.PORT) || 3000;
+connectDb();
 
 // Middleware
 app.use(cors());
