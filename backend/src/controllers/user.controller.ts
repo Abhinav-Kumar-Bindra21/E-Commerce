@@ -1,14 +1,18 @@
 import { Request, Response } from "express";
-import { z } from "zod";
+import { email, z } from "zod";
 import User from "../models/user.model";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import generateToken from "../utils/generateToken";
 
 const registerUserSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  email: z.string().email("Please enter a valid email"),
+  userName: z.string().trim().min(3, "Name must be at least 3 characters"),
+  emailId: z.string().trim().email("Please enter a valid email"),
   password: z.string().min(7, "Password must be at least 7 characters"),
+});
+
+const loginSchema = z.object({
+  email,
 });
 
 // Register User Function
@@ -20,24 +24,23 @@ export const registerUser = async (req: Request, res: Response) => {
     if (!result.success) {
       return res.status(400).json({ success: false, message: "Validation failed", errors: result.error.issues });
     }
-    const { name, email, password } = req.body;
+    const { userName, emailId, password } = result.data;
 
     if (!validator.isStrongPassword(password)) {
       return res.status(400).json({ success: false, message: "Password is too weak" });
     }
 
-    const exitsUser = await User.findOne({ email });
+    const exitsUser = await User.findOne({ emailId });
 
     if (exitsUser) {
-      return res.status(400).json({ success: false, message: "User already exits, Please login !!" });
+      return res.status(409).json({ success: false, message: "User already exits, Please login !!" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      name,
-      email,
+      userName,
+      emailId,
       password: hashedPassword,
     });
 
@@ -46,7 +49,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const token = generateToken(user._id);
 
     res.status(201).json({ success: true, message: "User register successfully", token });
-  } catch (error) {
+  } catch (error: any) {
     res.status(400).json({
       success: false,
       error: error.message,
