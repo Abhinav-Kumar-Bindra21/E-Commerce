@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { email, success, z } from "zod";
+import { z } from "zod";
 import User from "../models/user.model";
 import validator from "validator";
 import bcrypt from "bcrypt";
@@ -100,5 +100,10 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const adminLogin = (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
 };
