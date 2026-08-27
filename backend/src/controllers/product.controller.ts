@@ -51,7 +51,7 @@ export const listProducts = async (req: Request, res: Response) => {
     const product = await Product.find({});
     res.status(200).json({ success: true, product });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: "Failed to fetch all records" });
   }
 };
 
@@ -59,11 +59,37 @@ export const listProducts = async (req: Request, res: Response) => {
 
 export const removeProduct = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Product id is missing" });
+    }
+
+    await Product.findByIdAndDelete(id);
+
+    res.status(200).json({ success: true, message: "Product Remove Successfully" });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: "Product Removing Failed" });
+  }
 };
 
 // function for single product info
 export const singleProduct = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const { productId } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({ success: false, message: "Product id is missing" });
+    }
+
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product is not present" });
+    }
+
+    res.status(200).json({ success: true, product });
+  } catch (error: any) {
+    return res.status(400).json({ success: false, message: "Internal server error" });
+  }
 };

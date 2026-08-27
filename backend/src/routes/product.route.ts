@@ -14,8 +14,8 @@ productRouter.post(
   ]),
   addProduct,
 );
-productRouter.post("/remove", removeProduct);
-productRouter.post("/single", singleProduct);
+productRouter.delete("/remove", removeProduct);
+productRouter.get("/single", singleProduct);
 productRouter.get("/list", listProducts);
 
 export default productRouter;

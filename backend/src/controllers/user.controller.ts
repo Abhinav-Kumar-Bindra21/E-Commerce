@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { z } from "zod";
+import { success, z } from "zod";
 import User from "../models/user.model";
 import validator from "validator";
 import bcrypt from "bcrypt";
@@ -87,7 +87,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const token = generateToken(user._id);
 
-    res.status(200).json({ success: true, message: "User Loggedin Successfully", token });
+    res.status(200).json({ success: true, message: "User Loggeding Successfully", token });
   } catch (error: any) {
     res.status(400).json({
       success: false,
@@ -100,6 +100,21 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const adminLogin = (req: Request, res: Response) => {
   try {
+    const result = loginSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({ success: false, message: "Validation failed", errors: result.error.issues });
+    }
+
+    const { emailId, password } = result.data;
+
+    if (!(emailId === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD)) {
+      return res.status(400).json({ success: false, message: "Invalid Credentials" });
+    }
+
+    const token = generateToken(emailId + password);
+
+    res.status(200).json({ success: true, message: "Admin Loggeding Successfully", token });
   } catch (error: any) {
     res.status(400).json({
       success: false,
