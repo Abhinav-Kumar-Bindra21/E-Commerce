@@ -3,7 +3,7 @@ import { success, z } from "zod";
 import User from "../models/user.model";
 import validator from "validator";
 import bcrypt from "bcrypt";
-import generateToken from "../utils/generateToken";
+import { generateAdminToken, generateToken } from "../utils/generateToken";
 
 const registerUserSchema = z.object({
   userName: z.string().trim().min(3, "Name must be at least 3 characters"),
@@ -112,7 +112,7 @@ export const adminLogin = (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "Invalid Credentials" });
     }
 
-    const token = generateToken(emailId + password);
+    const token = generateAdminToken(emailId);
 
     res.status(200).json({ success: true, message: "Admin Loggeding Successfully", token });
   } catch (error: any) {
