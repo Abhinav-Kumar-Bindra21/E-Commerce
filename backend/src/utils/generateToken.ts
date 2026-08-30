@@ -7,8 +7,8 @@ export const generateToken = (userId: Types.ObjectId) => {
   return token;
 };
 
-export const generateAdminToken = (email: string) => {
-  const token = jwt.sign({ email }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+export const generateAdminToken = (emailId: string) => {
+  const token = jwt.sign({ emailId }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
 
   return token;
 };
