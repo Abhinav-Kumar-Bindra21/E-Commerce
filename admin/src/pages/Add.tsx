@@ -4,7 +4,7 @@ import axios from "axios";
 import { backendUrl } from "../App";
 import { toast } from "react-toastify";
 
-const Add = ({ token }) => {
+const Add = ({ token }: { token: string }) => {
   const [image1, setImage1] = useState<File | null>(null);
   const [image2, setImage2] = useState<File | null>(null);
   const [image3, setImage3] = useState<File | null>(null);
