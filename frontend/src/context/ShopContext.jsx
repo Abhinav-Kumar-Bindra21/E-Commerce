@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, use, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import axios from "axios";
@@ -13,6 +13,7 @@ const ShopContextProvider = (props) => {
   const [showSearch, setShowSearch] = useState(false);
   const [cartItems, setCartItems] = useState({});
   const [products, setProducts] = useState([]);
+  const [token, setToken] = useState("");
   const navigate = useNavigate();
 
   const addToCart = async (itemId, size) => {
@@ -90,6 +91,12 @@ const ShopContextProvider = (props) => {
     getProductData();
   }, []);
 
+  useEffect(() => {
+    if (!token && localStorage.getItem("token")) {
+      setToken(localStorage.getItem("token"));
+    }
+  });
+
   const value = {
     products,
     currency,
@@ -105,6 +112,9 @@ const ShopContextProvider = (props) => {
     getCartAmount,
     navigate,
     backendUrl,
+    token,
+    setToken,
+    setCartItems,
   };
 
   return <ShopContext.Provider value={value}>{props.children}</ShopContext.Provider>;

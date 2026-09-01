@@ -1,11 +1,57 @@
-import React, { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { ShopContext } from "../context/ShopContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Login = () => {
-  const [currentState, setCurrentState] = useState("Sign Up");
+  const { token, setToken, navigate, backendUrl } = useContext(ShopContext);
+
+  const [currentState, setCurrentState] = useState("Login");
+
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailId, setEmailId] = useState("");
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    try {
+      if (currentState === "Sign Up") {
+        const res = await axios.post(backendUrl + "/api/user/register", { userName: name, emailId, password });
+
+        if (res.data.success) {
+          setToken(res.data.token);
+          localStorage.setItem("token", res.data.token);
+          toast.success(res.data.message);
+        } else {
+          toast.error(res.data.message);
+        }
+      } else {
+        const res = await axios.post(backendUrl + "/api/user/login", { emailId, password });
+        if (res.data.success) {
+          setToken(res.data.token);
+          localStorage.setItem("token", res.data.token);
+          toast.success(res.data.message);
+        } else {
+          toast.error(res.data.message);
+        }
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data);
+
+        toast.error(error.response?.data?.message || "Something went wrong");
+      } else {
+        console.log(error);
+        toast.error("Something went wrong");
+      }
+    }
   };
+
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token]);
   return (
     <form
       onSubmit={onSubmitHandler}
@@ -20,10 +66,31 @@ const Login = () => {
       {currentState === "Login" ? (
         ""
       ) : (
-        <input type="text" className="w-full px-3 py-2 border border-gray-800" placeholder="Name" required />
+        <input
+          onChange={(e) => setName(e.target.value)}
+          value={name}
+          type="text"
+          className="w-full px-3 py-2 border border-gray-800"
+          placeholder="Name"
+          required
+        />
       )}
-      <input type="email" className="w-full px-3 py-2 border border-gray-800" placeholder="Email" required />
-      <input type="password" className="w-full px-3 py-2 border border-gray-800" placeholder="Password" required />
+      <input
+        onChange={(e) => setEmailId(e.target.value)}
+        value={emailId}
+        type="email"
+        className="w-full px-3 py-2 border border-gray-800"
+        placeholder="Email"
+        required
+      />
+      <input
+        onChange={(e) => setPassword(e.target.value)}
+        value={password}
+        type="password"
+        className="w-full px-3 py-2 border border-gray-800"
+        placeholder="Password"
+        required
+      />
 
       <div className="w-full flex justify-between text-sm mt-[-8px]">
         <p className="cursor-pointer">Forgot your password?</p>
