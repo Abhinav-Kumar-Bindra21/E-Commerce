@@ -8,6 +8,6 @@ cartRouter.use(authUser);
 
 cartRouter.post("/get", getUserCart);
 cartRouter.post("/add", addToCart);
-cartRouter.get("/update", updateCart);
+cartRouter.post("/update", updateCart);
 
 export default cartRouter;
