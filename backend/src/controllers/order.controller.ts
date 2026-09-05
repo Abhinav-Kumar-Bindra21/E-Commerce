@@ -1,10 +1,33 @@
 import { Request, Response } from "express";
+import Orders from "../models/order.model";
+import User from "../models/user.model";
 
 // Placing orders using cod method
 
 export const placeOrder = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const { userId, items, amount, address } = req.body;
+
+    const orderData = {
+      userId,
+      items,
+      address,
+      amount,
+      paymentMethod: "cod",
+      payment: false,
+      date: Date.now(),
+    };
+
+    const newOrder = new Orders(orderData);
+
+    await newOrder.save();
+
+    await User.findByIdAndUpdate(userId, { cardData: {} });
+
+    res.status(200).json({ success: true, message: "Order Placed" });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
 };
 
 // Placing orders using Stripe method
