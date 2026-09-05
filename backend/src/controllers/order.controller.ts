@@ -55,7 +55,18 @@ export const allOrders = async (req: Request, res: Response) => {
 
 export const userOrders = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const { userId } = req.body;
+
+    const orders = await Orders.find({ userId });
+
+    if (!orders) {
+      return res.status(400).json({ success: false, message: "No Orders there" });
+    }
+
+    res.status(200).json({ success: true, message: "Orders Details Send", orders });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 // Update order status
