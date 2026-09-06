@@ -48,7 +48,12 @@ export const placeOrderRazorpay = async (req: Request, res: Response) => {
 
 export const allOrders = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const orders = await Orders.find({});
+
+    res.status(200).json({ success: true, message: "All Orders Data has Sent Successfully", orders });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 // User order data for frontend
@@ -73,5 +78,16 @@ export const userOrders = async (req: Request, res: Response) => {
 
 export const updateStatus = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const { orderId, status } = req.body;
+
+    if (!orderId || !status) {
+      return res.status(400).json({ success: false, message: "OrderId and Status is Missing" });
+    }
+
+    await Orders.findByIdAndUpdate(orderId, { status });
+
+    res.status(200).json({ success: true, message: "Status Updated Successfully" });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
