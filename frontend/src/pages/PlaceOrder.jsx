@@ -56,14 +56,43 @@ const PlaceOrder = () => {
       switch (method) {
         // Api for Cod
         case "cod":
-          const res = await axios.post(backendUrl + "/api/order/place", orderData, { headers: { token } });
-          if (res.data.success) {
-            setCartItems({});
-            navigate("/orders");
-          } else {
-            toast.error(res.data.message);
+          try {
+            const res = await axios.post(backendUrl + "/api/order/place", orderData, { headers: { token } });
+            if (res.data.success) {
+              setCartItems({});
+              navigate("/orders");
+            } else {
+              toast.error(res.data.message);
+            }
+          } catch (error) {
+            if (axios.isAxiosError(error)) {
+              toast.error(error.response?.data?.message || "Failed to place order");
+            } else {
+              toast.error("Something went wrong");
+            }
           }
 
+          break;
+
+        case "stripe":
+          try {
+            const responseStripe = await axios.post(backendUrl + "/api/order/stripe", orderData, {
+              headers: { token },
+            });
+
+            if (responseStripe.data.success) {
+              const { session_url } = responseStripe.data;
+              window.location.replace(session_url);
+            } else {
+              toast.error(responseStripe.data.message);
+            }
+          } catch (error) {
+            if (axios.isAxiosError(error)) {
+              toast.error(error.response?.data?.message || "Failed to place order");
+            } else {
+              toast.error("Something went wrong");
+            }
+          }
           break;
 
         default:
