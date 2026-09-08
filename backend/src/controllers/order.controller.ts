@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Orders from "../models/order.model";
 import User from "../models/user.model";
 import Stripe from "stripe";
+import razorpay from "razorpay";
 
 // global variables
 const currency = "usd";
@@ -9,6 +10,10 @@ const deliveryCharge = 10;
 
 // gateway initialize
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const razorpayInstance = new razorpay({
+  key_id: process.env.RAZORPAY_API_ID as string,
+  key_secret: process.env.RAZORPAY_KEY_SECRET as string,
+});
 
 // Placing orders using cod method
 
@@ -138,11 +143,83 @@ export const placeOrderStripe = async (req: Request, res: Response) => {
   }
 };
 
+// verify stripe
+
+export const verifyStripe = async (req: Request, res: Response) => {
+  try {
+    const { orderId, success, userId } = req.body;
+
+    if (!orderId || !success || !userId) {
+      return res.status(400).json({ success: false, message: "Missing orderId,success and userId" });
+    }
+
+    if (success === true) {
+      await Orders.findByIdAndUpdate(orderId, { payment: true });
+      await User.findByIdAndUpdate(userId, { cartData: {} });
+      res.status(200).json({ success: true, message: "Update payment status" });
+    } else {
+      await Orders.findByIdAndDelete(orderId);
+      res.status(200).json({ success: true });
+    }
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 // Placing orders using Razorpay method
 
 export const placeOrderRazorpay = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const { userId, items, amount, address } = req.body;
+
+    if (!userId || !items || !amount || !address) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required order details",
+      });
+    }
+
+    // check for user existing or not
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const orderData = {
+      userId,
+      items,
+      address,
+      amount,
+      paymentMethod: "Razorpay",
+      payment: false,
+      date: Date.now(),
+    };
+
+    const newOrder = new Orders(orderData);
+
+    await newOrder.save();
+
+    const options = {
+      amount: amount * 100,
+      currency: currency.toUpperCase(),
+      receipt: newOrder._id.toString(),
+    };
+
+    await razorpayInstance.orders.create(options, (error, order) => {
+      if (error) {
+        return res.status(400).json({ success: false, message: error });
+      }
+
+      res.status(200).json({ success: true, order });
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 // All Orders data from Admin panel
