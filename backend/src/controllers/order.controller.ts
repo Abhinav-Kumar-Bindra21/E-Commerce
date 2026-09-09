@@ -222,6 +222,30 @@ export const placeOrderRazorpay = async (req: Request, res: Response) => {
   }
 };
 
+// verify razorpay payment method
+
+export const verifyRazorpay = async (req: Request, res: Response) => {
+  try {
+    const { userId, razorpay_order_id } = req.body;
+
+    if (!userId || !razorpay_order_id) {
+      return res.status(400).json({ success: false, message: "OrderId or razorpay order id is missing" });
+    }
+
+    const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+
+    if (orderInfo.status === "paid") {
+      await Orders.findByIdAndUpdate(orderInfo.receipt, { payment: true });
+      await User.findByIdAndUpdate(userId, { cartData: {} });
+      res.status(200).json({ success: true, message: "Payment Successful" });
+    } else {
+      res.status(400).json({ success: false, message: "Payment Failed" });
+    }
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 // All Orders data from Admin panel
 
 export const allOrders = async (req: Request, res: Response) => {
